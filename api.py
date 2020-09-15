@@ -1,21 +1,19 @@
 from datetime import datetime
-
-import flask
-import paho.mqtt.client as mqtt
+import logging
 import json
 
+import flask
 from flask import jsonify, send_from_directory
-
+import paho.mqtt.client as mqtt
 from gtfs_realtime import create_gtfs_proto_entity
 
 q = []
 
 def on_message(client, userdata, message):
-    print("Date de la `%s`: %s" % (message.topic, message.payload))
     q.append([message.topic, message.payload])
 
 
-client_id = "roataway-pydemo"
+client_id = "bridge-gtfs-realtime"
 client = mqtt.Client(client_id)
 
 client.on_message = on_message
