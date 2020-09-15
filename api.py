@@ -9,8 +9,9 @@ from gtfs_realtime import create_gtfs_proto_entity
 
 q = []
 
+
 def on_message(client, userdata, message):
-    q.append([message.topic, message.payload])
+    q.append((message.topic, message.payload))
 
 
 client_id = "bridge-gtfs-realtime"
@@ -26,35 +27,28 @@ client.subscribe("telemetry/transport/+")
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
-idd = 0
 
 
-@app.route('/get_gtfs_static', methods=['GET'])
+@app.route("/get_gtfs_static", methods=["GET"])
 def gtfs_file():
     return send_from_directory(".", "./GTFS_Chisinau/Archive.zip", as_attachment=True)
 
 
-prev_stamp = None
-
-@app.route('/get_data', methods=['GET'])
+@app.route("/get_data", methods=["GET"])
 def home():
     client.loop_read(100)
 
-    if (len(q) >= 1):
-        message = q.pop()
-        my_json = message[1].decode('utf8').replace("'", '"')
-        topic = message[0]
-        data = json.loads(my_json)
+    if len(q) >= 1:
+        topic, payload = q.pop()
+        raw_json = payload.decode("utf8").replace("'", '"')
+        data = json.loads(raw_json)
         feed = create_gtfs_proto_entity(
             q,
             timestamp=datetime.now().timestamp(),
         )
-        print(feed)
         f = open("feed.pb", "wb")
-        # f.write(feed.SerializeToString())
-        if ("0" in topic):
+        if "0" in topic:
             f.write(feed.SerializeToString())
-            print(data['timestamp'])
             f.close()
             return send_from_directory(".", "./feed.pb", as_attachment=True)
         else:
@@ -62,11 +56,15 @@ def home():
             f.close()
             return send_from_directory(".", "./feed.pb", as_attachment=True)
 
-
-
     else:
         f = open("feed.pb", "wb")
         return send_from_directory(".", "./feed.pb", as_attachment=True)
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(levelname)5s %(name)5s - %(message)s",
+)
 
 
 app.run()
