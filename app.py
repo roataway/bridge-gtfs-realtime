@@ -74,7 +74,7 @@ def handle_mqtt_message(_client, _userdata, message):
 
 
 @app.route("/", methods=["GET"])
-def status():
+def index():
     """Serve a simple status page that returns a string with the current state of all the vehicles"""
     pieces = [f'{board}: {status}' for board, status in STATE.items()]
 
@@ -85,13 +85,13 @@ def status():
 
 
 @app.route("/get_gtfs_static", methods=["GET", "POST"])
-def gtfs_file():
+def gtfs_static():
     LOG.debug('Send GTFS static')
     return send_file("regia-chisinau-md_regia-chisinau-md_1605016016_regia-chisinau-md.zip", as_attachment=True)
 
 
 @app.route('/get_data', methods=['GET', 'POST'])
-def index():
+def gtfs_realtime():
     LOG.debug('Send live feed, %i entries', len(STATE))
     feed = create_gtfs_proto_entity(STATE)
     if feed is not None:
