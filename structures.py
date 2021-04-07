@@ -28,4 +28,5 @@ class FeedEntity:
         self.vehicle_trip_id = route_id
 
     def __str__(self):
-        return f'lat:{self.vehicle_position_lat}, lon:{self.vehicle_position_lot}, route_id:{self.vehicle_trip_id}'
+        return f'lat:{self.vehicle_position_lat}, lon:{self.vehicle_position_lot}, route_id:{self.vehicle_trip_id} ' \
+               f'@{datetime.fromtimestamp(self.vehicle_timestamp)}Z'
