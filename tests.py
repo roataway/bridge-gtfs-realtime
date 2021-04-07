@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from FeedEntity import FeedEntity
+from structures import FeedEntity
 from gtfs_realtime import create_gtfs_proto_entity
 
 
