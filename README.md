@@ -14,5 +14,9 @@ TODO figure out where to store it and how to get it, maybe use a git subrepo?
 
 
 ## Usage
-1. Run `python api.py` to start the bridge
-2. Open `http://localhost:5000/get_data` to access the realtime feed
+1. Run `python app.py` to start the bridge
+2. Open `http://localhost:5000` to view the current state of the worker in textual format
+
+Other endpoints:
+- `http://localhost:5000/get_data` - retrieve the live GTFS feed as ProtoBuf
+- `http://localhost:5000/get_gtfs_static`- retrieve the complete static GTFS data set as an archive
