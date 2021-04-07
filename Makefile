@@ -5,9 +5,9 @@ help:
 	@echo  ''
 
 autoformat:
-	black -l 120 api.py
+	black -l 120 app.py gtfs_realtime.py structures.py util.py constants.py
 
 verify:
-	black -l 120 --check api.py
-	flake8 --config=.flake8 api.py
-	bandit api.py
+	black -l 120 --check app.py gtfs_realtime.py structures.py util.py constants.py
+	flake8 --config=.flake8 app.py gtfs_realtime.py structures.py util.py constants.py
+	bandit app.py gtfs_realtime.py structures.py util.py constants.py
