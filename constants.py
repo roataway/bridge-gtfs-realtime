@@ -5,11 +5,11 @@ STATE_TTL = 5 * 60
 MAX_VEHICLES = 500
 
 # roataway API coordinates for the MQTT data stream
-MQTT_BROKER = 'opendata.dekart.com'
+MQTT_BROKER = "opendata.dekart.com"
 MQTT_PORT = 1945
 
 
-FORMAT_TIME = '%Y-%m-%dT%H:%M:%SZ'
+FORMAT_TIME = "%Y-%m-%dT%H:%M:%SZ"
 
 # http response to return when we've got an empty feed
-NO_CONTENT = ('', 204)
+NO_CONTENT = ("", 204)
