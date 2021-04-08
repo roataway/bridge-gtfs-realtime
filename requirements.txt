@@ -1,9 +1,7 @@
 paho-mqtt==1.5.1
 flask==1.1.2
-google-api-python-client==1.12.1
-git+https://github.com/Intersection/gtfs-realtime-translators.git@626a362e2c4b791f77418347961d393ab3b70335#egg=gtfs_realtime_translators
 eventlet==0.30.2
 expiringdict==1.2.1
 Flask-MQTT==1.1.1
 Flask-SocketIO==5.0.1
-
+gtfs-realtime-bindings==0.0.7
