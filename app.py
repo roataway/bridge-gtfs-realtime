@@ -12,7 +12,6 @@ from expiringdict import ExpiringDict
 from structures import FeedEntity
 from gtfs_realtime import create_gtfs_proto_entity
 import constants as c
-from util import random_word
 
 LOG = logging.getLogger("app")
 
@@ -64,12 +63,12 @@ def handle_mqtt_message(_client, _userdata, message):
     else:
         # we've seen it before, we just update some of the attributes
         timestamp = datetime.strptime(data["timestamp"], c.FORMAT_TIME)
-        state.vehicle_timestamp = timestamp.timestamp()
-        state.id = random_word(6)  # TODO is this necessary?
-        state.vehicle_position_lat = data["latitude"]
-        state.vehicle_position_lot = data["longitude"]
-        state.vehicle_speed = data["speed"] / 3.6  # convert to m/s
-        state.vehicle_trip_id = route_id  # we overwrite it each time, in case it moved to a different route
+        state.last_seen = timestamp.timestamp()
+        state.lat = data["latitude"]
+        state.lon = data["longitude"]
+        state.speed = data["speed"] / 3.6  # convert to m/s
+        state.direction = data["direction"]
+        state.trip_id = route_id  # we overwrite it each time, in case it moved to a different route
 
 
 @app.route("/", methods=["GET"])

@@ -20,3 +20,8 @@ TODO figure out where to store it and how to get it, maybe use a git subrepo?
 Other endpoints:
 - `http://localhost:5000/get_data` - retrieve the live GTFS feed as ProtoBuf
 - `http://localhost:5000/get_gtfs_static`- retrieve the complete static GTFS data set as an archive
+
+
+## References
+
+- https://developers.google.com/transit/gtfs-realtime/reference

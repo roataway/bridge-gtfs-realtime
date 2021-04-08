@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime
 
-import gtfs_realtime_pb2
-import gtfs_realtime_pb2 as GTFS_real_time_proto
+from google.transit import gtfs_realtime_pb2
 
 from structures import FeedEntity
 from util import random_word, build_trolley_relation
@@ -16,52 +15,42 @@ LOG = logging.getLogger("gtfs")
 ROUTE_ID_MAP = build_trolley_relation("routes.csv")
 
 
-def create_gtfs_proto_entity(state: dict) -> GTFS_real_time_proto.FeedMessage:
-    gtfs_realtime_proto = GTFS_real_time_proto.FeedMessage()
-    gtfs_realtime_proto.header.gtfs_realtime_version = "1.0"
-    gtfs_realtime_proto.header.incrementality = gtfs_realtime_pb2.FeedHeader.FULL_DATASET
-    gtfs_realtime_proto.header.timestamp = int(datetime.now().timestamp())
-    result = []
+def create_gtfs_proto_entity(state: dict) -> gtfs_realtime_pb2.FeedMessage:
+    """Transform out internal state into a FeedMessage structure that GTFS expects"""
+    result = gtfs_realtime_pb2.FeedMessage()
+    result.header.gtfs_realtime_version = "1.0"
+    result.header.incrementality = gtfs_realtime_pb2.FeedHeader.FULL_DATASET
+    result.header.timestamp = int(datetime.now().timestamp())
+    output_entities = []
 
     for board_id, feed_entity in state.items():
-        if feed_entity.vehicle_trip_id in ROUTE_ID_MAP:
-            result.append(feed_entity)
+        if feed_entity.trip_id in ROUTE_ID_MAP:
+            output_entities.append(feed_entity)
 
-    if not result:
+    if not output_entities:
         # when no data are available, we just return None
         LOG.debug("No feeds to return")
         return None
 
     # if we got this far it means we've got some data, so we proceed normally
-    for feed in result:
-        build_big_entity(feed, gtfs_realtime_proto)
+    for entity in output_entities:
+        build_big_entity(entity, result)
 
-    LOG.debug("Produced %i entries in the feed", len(result))
-    return gtfs_realtime_proto
+    LOG.debug("Produced %i entries in the feed", len(output_entities))
+    return result
 
 
-def build_big_entity(feed: FeedEntity, gtfs_realtime_proto):
-    # topic = feed.vehicle_trip_id
-
-    feedentity = gtfs_realtime_proto.entity.add()
-    feedentity.vehicle.vehicle.id = feed.vehicle_id
-    feedentity.vehicle.vehicle.label = feed.vehicle_label
+def build_big_entity(entity: FeedEntity, feed):
+    feedentity = feed.entity.add()
+    feedentity.vehicle.vehicle.id = entity.id
+    feedentity.vehicle.vehicle.label = entity.label
     feedentity.vehicle.timestamp = int(datetime.now().timestamp())
 
-    # feedentity.header.gtfs_realtime_version = "1.0"
-    # feedentity.header.incrementality = gtfs_realtime_pb2.FeedHeader.FULL_DATASET
-
     feedentity.id = random_word(4)
-    # feedentity.vehicle.trip.schedule_relationship = TripDescriptor.SCHEDULED
-    feedentity.vehicle.position.longitude, feedentity.vehicle.position.latitude = (
-        feed.vehicle_position_lot,
-        feed.vehicle_position_lat,
-    )
-    feedentity.vehicle.position.speed = feed.vehicle_speed
-    # feedentity.id = '0000076'
-    # feedentity.vehicle.current_status = ""
-    # feedentity.vehicle.stop_id = stop_id
-    # feedentity.vehicle.current_stop_sequence = current_stop_sequence
-    feedentity.vehicle.trip.route_id = ROUTE_ID_MAP[feed.vehicle_trip_id]
 
-    # feedentity.vehicle.trip.schedule_relationship = TripDescriptor.SCHEDULED
+    feedentity.vehicle.position.longitude, feedentity.vehicle.position.latitude = (
+        entity.lon,
+        entity.lat,
+    )
+    feedentity.vehicle.position.speed = entity.speed
+    feedentity.vehicle.trip.route_id = ROUTE_ID_MAP[entity.trip_id]
