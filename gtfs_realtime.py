@@ -48,9 +48,8 @@ def build_big_entity(entity: FeedEntity, feed):
 
     feedentity.id = random_word(4)
 
-    feedentity.vehicle.position.longitude, feedentity.vehicle.position.latitude = (
-        entity.lon,
-        entity.lat,
-    )
+    feedentity.vehicle.position.longitude = entity.lon
+    feedentity.vehicle.position.latitude = entity.lat
     feedentity.vehicle.position.speed = entity.speed
+    feedentity.vehicle.position.bearing = entity.direction
     feedentity.vehicle.trip.route_id = ROUTE_ID_MAP[entity.trip_id]
