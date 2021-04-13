@@ -24,7 +24,7 @@ def create_gtfs_proto_entity(state: dict) -> GTFS_real_time_proto.FeedMessage:
     result = []
 
     for board_id, feed_entity in state.items():
-        if feed_entity.vehicle_trip_id in ROUTE_ID_MAP:
+        if feed_entity.vehicle_route_id in ROUTE_ID_MAP:
             result.append(feed_entity)
 
     if not result:
@@ -41,7 +41,6 @@ def create_gtfs_proto_entity(state: dict) -> GTFS_real_time_proto.FeedMessage:
 
 
 def build_big_entity(feed: FeedEntity, gtfs_realtime_proto):
-    # topic = feed.vehicle_trip_id
 
     feedentity = gtfs_realtime_proto.entity.add()
     feedentity.vehicle.vehicle.id = feed.vehicle_id
@@ -62,6 +61,6 @@ def build_big_entity(feed: FeedEntity, gtfs_realtime_proto):
     # feedentity.vehicle.current_status = ""
     # feedentity.vehicle.stop_id = stop_id
     # feedentity.vehicle.current_stop_sequence = current_stop_sequence
-    feedentity.vehicle.trip.route_id = ROUTE_ID_MAP[feed.vehicle_trip_id]
+    feedentity.vehicle.trip.route_id = ROUTE_ID_MAP[feed.vehicle_route_id]
 
     # feedentity.vehicle.trip.schedule_relationship = TripDescriptor.SCHEDULED

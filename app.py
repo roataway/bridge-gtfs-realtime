@@ -69,7 +69,7 @@ def handle_mqtt_message(_client, _userdata, message):
         state.vehicle_position_lat = data["latitude"]
         state.vehicle_position_lot = data["longitude"]
         state.vehicle_speed = data["speed"] / 3.6  # convert to m/s
-        state.vehicle_trip_id = route_id  # we overwrite it each time, in case it moved to a different route
+        state.vehicle_route_id = route_id  # we overwrite it each time, in case it moved to a different route
 
 
 @app.route("/", methods=["GET"])

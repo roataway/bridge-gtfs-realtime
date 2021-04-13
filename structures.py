@@ -13,7 +13,7 @@ class FeedEntity:
     feed_id: int
     vehicle_position_lat: float
     vehicle_position_lot: float
-    vehicle_trip_id: str
+    vehicle_route_id: str
     vehicle_speed: float
 
     def __init__(self, data: dict, route_id: str):
@@ -25,10 +25,10 @@ class FeedEntity:
         self.vehicle_position_lat = data["latitude"]
         self.vehicle_position_lot = data["longitude"]
         self.vehicle_speed = data["speed"] / 3.6  # convert to m/s
-        self.vehicle_trip_id = route_id
+        self.vehicle_route_id = route_id
 
     def __str__(self):
         return (
-            f"lat:{self.vehicle_position_lat}, lon:{self.vehicle_position_lot}, route_id:{self.vehicle_trip_id} "
+            f"lat:{self.vehicle_position_lat}, lon:{self.vehicle_position_lot}, route_id:{self.vehicle_route_id} "
             f"@{datetime.fromtimestamp(self.vehicle_timestamp)}Z"
         )
