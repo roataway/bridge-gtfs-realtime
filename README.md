@@ -2,7 +2,7 @@
 Expose the Roataway MQTT data stream in a GTFS realtime feed format
 
 ## Principle of operation
-This program subscribes to the (route-specific MQTT topic)[https://github.com/roataway/api-documentation#telemetryroute],
+This program subscribes to the [route-specific MQTT topic](https://github.com/roataway/api-documentation#telemetryroute),
 consumes all incoming payloads and maintains an internal data structure with the latest known info about each vehicle.
 
 The following table illustrates how attributes of the MQTT payloads are mapped to entries in the GTFS `FeedMessage`:
