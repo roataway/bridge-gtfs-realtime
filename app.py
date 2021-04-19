@@ -84,10 +84,10 @@ def index():
 @app.route("/get_gtfs_static", methods=["GET", "POST"])
 def gtfs_static():
     LOG.debug("Send GTFS static")
-    return send_file("regia-chisinau-md_regia-chisinau-md_1605016016_regia-chisinau-md.zip", as_attachment=True)
+    return send_file("data/rtec-chisinau-md-gtfs-static.zip", as_attachment=True)
 
 
-@app.route("/get_data", methods=["GET", "POST"])
+@app.route("/get_gtfs_rt", methods=["GET", "POST"])
 def gtfs_realtime():
     LOG.debug("Send live feed, %i raw entries", len(STATE))
     feed = create_gtfs_feed(STATE)
@@ -101,7 +101,7 @@ def gtfs_realtime():
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)5s %(funcName)s - %(message)s")
 
-    host = "localhost"
+    host = "0.0.0.0"
     port = 5000
     LOG.info("Starting on %s:%i", host, port)
     socketio.run(app, host=host, port=port, use_reloader=True, debug=False)
