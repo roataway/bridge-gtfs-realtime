@@ -5,3 +5,4 @@ expiringdict==1.2.1
 Flask-MQTT==1.1.1
 Flask-SocketIO==5.0.1
 gtfs-realtime-bindings==0.0.7
+requests==2.22.0
