@@ -17,7 +17,7 @@ The following table illustrates how attributes of the MQTT payloads are mapped t
 | `board`            | `VehicleDescriptor.label`            | Board number, e.g. `"3890"`            |
 | `rtu_id`           | `VehicleDescriptor.id`               | Tracker ID, e.g. `"0000123"`           |
 | `route`            | `TripDescriptor.route_id`            | Human-readable route name, e.g. `"30"` |
-| `route` (in topic) | not exposed                          | upstream_route_id, e.g. `1`            |
+| `route` (in topic) | not exposed                          | route_id_upstream, e.g. `1`            |
 
 
 ## Prerequisites
