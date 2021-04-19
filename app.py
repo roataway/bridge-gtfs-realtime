@@ -9,8 +9,8 @@ from flask_mqtt import Mqtt
 from flask_socketio import SocketIO
 from expiringdict import ExpiringDict
 
-from structures import FeedEntity
-from gtfs_realtime import create_gtfs_proto_entity
+from structures import VehicleState
+from gtfs_realtime import create_gtfs_feed
 import constants as c
 
 LOG = logging.getLogger("app")
@@ -57,18 +57,17 @@ def handle_mqtt_message(_client, _userdata, message):
         state = STATE[board_id]
     except KeyError:
         # we've never seen this board before, let's create a data structure for it
-        state = FeedEntity(data, route_id)
+        state = VehicleState(data, route_id)
         STATE[board_id] = state
         LOG.info("New board %s\t %s", board_id, state)
     else:
         # we've seen it before, we just update some of the attributes
-        timestamp = datetime.strptime(data["timestamp"], c.FORMAT_TIME)
-        state.last_seen = timestamp.timestamp()
+        state.last_seen = datetime.strptime(data["timestamp"], c.FORMAT_TIME).timestamp()
         state.lat = data["latitude"]
         state.lon = data["longitude"]
         state.speed = data["speed"] / 3.6  # convert to m/s
         state.direction = data["direction"]
-        state.trip_id = route_id  # we overwrite it each time, in case it moved to a different route
+        state.route_id = route_id  # we overwrite it each time, in case it moved to a different route
 
 
 @app.route("/", methods=["GET"])
@@ -90,16 +89,13 @@ def gtfs_static():
 
 @app.route("/get_data", methods=["GET", "POST"])
 def gtfs_realtime():
-    LOG.debug("Send live feed, %i entries", len(STATE))
-    feed = create_gtfs_proto_entity(STATE)
-    if feed is not None:
-        mem = BytesIO()
-        mem.write(feed.SerializeToString())
-        mem.seek(0)
-        return send_file(mem, as_attachment=True, attachment_filename="c.pb", mimetype="application/protobuf")
-    else:
-        LOG.debug("No feed to send")
-        return c.NO_CONTENT
+    LOG.debug("Send live feed, %i raw entries", len(STATE))
+    feed = create_gtfs_feed(STATE)
+    mem = BytesIO()
+    mem.write(feed.SerializeToString())
+    mem.seek(0)
+    name = datetime.now().strftime('gtfs-rtec-%Y-%m-%d--%H-%M-%S.pb')
+    return send_file(mem, as_attachment=True, attachment_filename=name, mimetype="application/protobuf")
 
 
 if __name__ == "__main__":
