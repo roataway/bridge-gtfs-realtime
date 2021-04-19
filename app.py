@@ -81,13 +81,13 @@ def index():
     return response
 
 
-@app.route("/get_gtfs_static", methods=["GET", "POST"])
+@app.route("/static", methods=["GET", "POST"])
 def gtfs_static():
     LOG.debug("Send GTFS static")
     return send_file("data/rtec-chisinau-md-gtfs-static.zip", as_attachment=True)
 
 
-@app.route("/get_gtfs_rt", methods=["GET", "POST"])
+@app.route("/rt", methods=["GET", "POST"])
 def gtfs_realtime():
     LOG.debug("Send live feed, %i raw entries", len(STATE))
     feed = create_gtfs_feed(STATE)

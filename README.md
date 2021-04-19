@@ -28,8 +28,9 @@ The following table illustrates how attributes of the MQTT payloads are mapped t
 
 ### Producing the static GTFS feed
 
-TODO figure out where to store it and how to get it, maybe use a git subrepo?
-
+TODO
+- figure out where to store it and how to get it, maybe use a git subrepo?
+- document how it was modified to replace `_` for `-` in the names of trips
 
 ## Usage
 ### Serving the GTFS stream
@@ -37,12 +38,12 @@ TODO figure out where to store it and how to get it, maybe use a git subrepo?
 2. Open `http://localhost:5000` to view the current state of the worker in textual format
 
 Other endpoints:
-- `http://localhost:5000/get_gtfs_rt` - retrieve the live GTFS feed as ProtoBuf
-- `http://localhost:5000/get_gtfs_static`- retrieve the complete static GTFS data set as an archive
+- `http://localhost:5000/rt` - retrieve the live GTFS feed as ProtoBuf
+- `http://localhost:5000/static`- retrieve the complete static GTFS data set as an archive
 
 ### Consuming a GTFS stream
 For testing purposes, you might need to consume your own feed to see if it looks right. You can do so by running
-`python consumer.py <GTFS RT feed URL>`, e.g., `python consumer.py http://localhost:5000/get_gtfs_rt`. The data will
+`python consumer.py <GTFS RT feed URL>`, e.g., `python consumer.py http://localhost:5000/rt`. The data will
 be dumped to stdout.
 
 
