@@ -27,7 +27,7 @@ class VehicleState:
 
     def __str__(self):
         return (
-            f"lat:{self.lat}, lon:{self.lon}, route_upstream_id:{self.route_id} "
+            f"lat:{self.lat:.4f} lon:{self.lon:.4f} route_upstream_id:{self.route_id: <3}"
             f"route_gtfs_id:{c.ROUTE_ID_MAP.get(self.route_id, 'unknown')} "
             f"@{datetime.fromtimestamp(self.last_seen)}Z"
         )
