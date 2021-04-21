@@ -26,7 +26,7 @@ def create_gtfs_feed(vehicle_states: dict) -> gtfs_realtime_pb2.FeedMessage:
         if state.route_id in ROUTE_ID_MAP:
             # create the FeedEntity and populate it with the values from our own state structure
             feed_entity = feed_message.entity.add()
-            feed_entity.id = f'{created_entries}-{board_id}'
+            feed_entity.id = f"{created_entries}-{board_id}"
 
             # https://developers.google.com/transit/gtfs-realtime/reference#message-vehicledescriptor
             feed_entity.vehicle.vehicle.id = state.rtu_id
@@ -40,12 +40,13 @@ def create_gtfs_feed(vehicle_states: dict) -> gtfs_realtime_pb2.FeedMessage:
             feed_entity.vehicle.position.bearing = state.direction
 
             # https://developers.google.com/transit/gtfs-realtime/reference#message-tripdescriptor
-            # note that the route_id is different here, ROUTE_ID_MAP[entity.route_id] is what we usually call "name_concise"
+            # note that the route_id is different here, ROUTE_ID_MAP[entity.route_id] is what we
+            # usually call "name_concise"
             feed_entity.vehicle.trip.route_id = ROUTE_ID_MAP[state.route_id]
-            created_entries +=1
+            created_entries += 1
         else:
             if state.route_id not in UNKNOWN_ROUTES:
-                LOG.warning('Skipping board %s from unknown upstream_route_id=%s', board_id, state.route_id)
+                LOG.warning("Skipping board %s from unknown upstream_route_id=%s", board_id, state.route_id)
                 UNKNOWN_ROUTES.add(state.route_id)
 
     LOG.debug("Produced %i entries in the feed", created_entries)

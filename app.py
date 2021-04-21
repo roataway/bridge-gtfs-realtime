@@ -70,7 +70,6 @@ def handle_mqtt_message(_client, _userdata, message):
         state.route_id = route_id  # we overwrite it each time, in case it moved to a different route
 
 
-
 @app.route("/", methods=["GET"])
 def index():
     """Serve a simple status page that returns a string with the current state of all the vehicles"""
@@ -95,7 +94,7 @@ def gtfs_realtime():
     mem = BytesIO()
     mem.write(feed.SerializeToString())
     mem.seek(0)
-    name = datetime.now().strftime('gtfs-rtec-%Y-%m-%d--%H-%M-%S.pb')
+    name = datetime.now().strftime("gtfs-rtec-%Y-%m-%d--%H-%M-%S.pb")
     return send_file(mem, as_attachment=True, attachment_filename=name, mimetype="application/protobuf")
 
 
