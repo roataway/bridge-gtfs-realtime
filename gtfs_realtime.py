@@ -3,16 +3,10 @@ from datetime import datetime
 
 from google.transit import gtfs_realtime_pb2
 
-from structures import VehicleState
-from util import random_word, build_trolley_relation
+from constants import ROUTE_ID_MAP
 
 LOG = logging.getLogger("gtfs")
 
-
-# TODO move this to git sub-repo
-# global dict that maps a route_id (aka id_upstream) to its name that passengers usually use (aka name_concise), e.g.:
-# "1" -> "30", "2" -> "32", etc.
-ROUTE_ID_MAP = build_trolley_relation("data/routes.csv")
 
 # keep a list of route IDs that we're not aware of. We rely on this set to
 # reduce log cluttering

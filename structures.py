@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from util import random_word
 import constants as c
 
 
@@ -28,6 +27,7 @@ class VehicleState:
 
     def __str__(self):
         return (
-            f"lat:{self.lat}, lon:{self.lon}, route_id:{self.route_id} "
+            f"lat:{self.lat}, lon:{self.lon}, route_upstream_id:{self.route_id} "
+            f"route_gtfs_id:{c.ROUTE_ID_MAP.get(self.route_id, 'unknown')} "
             f"@{datetime.fromtimestamp(self.last_seen)}Z"
         )
