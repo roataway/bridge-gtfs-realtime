@@ -21,6 +21,10 @@ eventlet.monkey_patch()
 # and the value is a FeedEntity that represents the last known state of this vehicle
 STATE = ExpiringDict(max_len=c.MAX_VEHICLES, max_age_seconds=c.STATE_TTL)
 
+#global dictionary which stores the start time for each board
+VEHICLE_START_TIME = ExpiringDict(max_len=c.MAX_VEHICLES, max_age_seconds=c.STATE_TTL)
+
+
 app = Flask(__name__)
 app.config["MQTT_BROKER_URL"] = c.MQTT_BROKER
 app.config["MQTT_BROKER_PORT"] = c.MQTT_PORT
@@ -35,7 +39,6 @@ socketio = SocketIO(app)
 @mqtt.on_connect()
 def handle_connect(_client, _userdata, _flags, _rc):
     mqtt.subscribe("telemetry/route/+")
-
 
 @mqtt.on_message()
 def handle_mqtt_message(_client, _userdata, message):
@@ -69,6 +72,12 @@ def handle_mqtt_message(_client, _userdata, message):
         state.direction = data["direction"]
         state.route_id = route_id  # we overwrite it each time, in case it moved to a different route
 
+    try:
+        VEHICLE_START_TIME[board_id]
+    except KeyError:
+        VEHICLE_START_TIME[board_id] = datetime.now().strftime(c.FORMAT_TIME)
+        LOG.debug('updating board id = ' + board_id +' start time ')
+
 
 @app.route("/", methods=["GET"])
 def index():
@@ -76,6 +85,16 @@ def index():
     pieces = [f"{board}: {status}" for board, status in STATE.items()]
 
     result = f"Total vehicles: {len(STATE)}\n\n"
+    response = make_response(result + "\n".join(pieces), 200)
+    response.mimetype = "text/plain"
+    return response
+
+@app.route("/start_times", methods=["GET"])
+def start_times():
+    """Serve a simple status page that returns a string with the current state of all the vehicles"""
+    pieces = [f"{board}: {status}" for board, status in VEHICLE_START_TIME.items()]
+
+    result = f"Total vehicles: {len(VEHICLE_START_TIME)}\n\n"
     response = make_response(result + "\n".join(pieces), 200)
     response.mimetype = "text/plain"
     return response
@@ -96,6 +115,14 @@ def gtfs_realtime():
     mem.seek(0)
     name = datetime.now().strftime("gtfs-rtec-%Y-%m-%d--%H-%M-%S.pb")
     return send_file(mem, as_attachment=True, attachment_filename=name, mimetype="application/protobuf")
+
+@app.route("/rt-human", methods=["GET"])
+def gtfs_realtime_human():
+    LOG.debug("Send live feed human readable, %i raw entries", len(STATE))
+    feed = create_gtfs_feed(STATE)
+    response = make_response(str(feed), 200)
+    response.mimetype = "text/plain"
+    return response
 
 
 if __name__ == "__main__":

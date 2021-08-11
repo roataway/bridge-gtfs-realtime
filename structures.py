@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import constants as c
 
@@ -18,7 +18,7 @@ class VehicleState:
     def __init__(self, data: dict, route_id: str):
         self.rtu_id = data["rtu_id"]
         self.board_name = data["board"]
-        self.last_seen = datetime.strptime(data["timestamp"], c.FORMAT_TIME).timestamp()
+        self.last_seen = ((datetime.strptime(data["timestamp"], c.FORMAT_TIME))+timedelta(hours=3)).timestamp() #TODO: get rid of substracting days, must use timezones
         self.lat = data["latitude"]
         self.lon = data["longitude"]
         self.speed = data["speed"] / 3.6  # convert to m/s
