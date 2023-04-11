@@ -2,8 +2,9 @@ from datetime import datetime
 import logging
 from io import BytesIO
 import json
+import requests
+import os
 
-import eventlet
 from flask import Flask, send_file, make_response
 from flask_mqtt import Mqtt
 from flask_socketio import SocketIO
@@ -15,7 +16,6 @@ import constants as c
 
 LOG = logging.getLogger("app")
 
-eventlet.monkey_patch()
 
 # global dict that maintains state, the key is a string that represents the board id,
 # and the value is a FeedEntity that represents the last known state of this vehicle
@@ -32,51 +32,65 @@ app.config["MQTT_REFRESH_TIME"] = 1.0
 app.logger.propagate = False
 
 
-mqtt = Mqtt(app)
 socketio = SocketIO(app)
 
+tranzy_routes = {}
 
-@mqtt.on_connect()
-def handle_connect(_client, _userdata, _flags, _rc):
-    mqtt.subscribe("telemetry/route/+")
+with open("tranzy_key.txt", "r") as file:
+    key = file.read()
+    
+with open("tranzy_routes.json", "r") as file:
+    tranzy_routes = json.load(file)
 
-@mqtt.on_message()
-def handle_mqtt_message(_client, _userdata, message):
-    payload = message.payload.decode()
-    route_id = message.topic.split("/")[-1]
-    # LOG.debug('%s->%s', message.topic, route_id)
 
-    try:
-        data = json.loads(payload)
-    except ValueError:
-        LOG.debug("Payload parsing error, ignoring it")
-        return
+def get_tranzy_data() -> dict:
+    response = requests.get('https://api.tranzy.dev/v1/opendata/vehicles', 
+                            headers={
+                                "Content-Type":"application/json",
+                                "X-API-KEY": os.environ.get("TRANZY_KEY", key),
+                                "X-Agency-Id" : "4"
+                            }
+                        )
+    return response.json()
 
-    # if we got this far, it means we're dealing with something like this:
-    # {"latitude": 47.037993, "longitude": 28.817931, "speed": 0, "direction": 151, "timestamp": "2021-04-07T21:39:12Z",
-    #  "board": "1273", "rtu_id": "0000289", "route": "22"}
-    board_id = data["board"]
-    try:
-        state = STATE[board_id]
-    except KeyError:
-        # we've never seen this board before, let's create a data structure for it
-        state = VehicleState(data, route_id)
-        STATE[board_id] = state
-        LOG.info("New board %s\t %s", board_id, state)
-    else:
-        # we've seen it before, we just update some of the attributes
-        state.last_seen = datetime.strptime(data["timestamp"], c.FORMAT_TIME).timestamp()
-        state.lat = data["latitude"]
-        state.lon = data["longitude"]
-        state.speed = data["speed"] / 3.6  # convert to m/s
-        state.direction = data["direction"]
-        state.route_id = route_id  # we overwrite it each time, in case it moved to a different route
 
-    try:
-        VEHICLE_START_TIME[board_id]
-    except KeyError:
-        VEHICLE_START_TIME[board_id] = datetime.now().strftime(c.FORMAT_TIME)
-        LOG.debug('updating board id = ' + board_id +' start time ')
+def handle_message():
+    tranzy_date = get_tranzy_data()
+    for data in tranzy_date: 
+        # if we got this far, it means we're dealing with something like this:
+        # {"latitude": 47.037993, "longitude": 28.817931, "speed": 0, "direction": 151, "timestamp": "2021-04-07T21:39:12Z",
+        #  "board": "1273", "rtu_id": "0000289", "route": "22"}
+        board_id = data["label"]
+        
+        if data["route_id"] is None:
+            continue
+        if data["vehicle_type"] != 11:
+            continue
+        
+        route_id = tranzy_routes[data["route_id"]]["route_short_name"]
+        if route_id is None:
+            continue
+        try:
+            state = STATE[board_id]
+        except KeyError:
+            # we've never seen this board before, let's create a data structure for it
+            state = VehicleState(data, route_id)
+            STATE[board_id] = state
+            LOG.info("New board %s\t %s", board_id, state)
+        else:
+            # we've seen it before, we just update some of the attributes
+            state.last_seen = datetime.strptime(data["timestamp"], c.FORMAT_TIME).timestamp()
+            state.lat = data["latitude"]
+            state.lon = data["longitude"]
+            state.speed = data["speed"] / 3.6 if data["speed"] is not None else 0  # convert to m/s
+            #state.direction = data["direction"]
+            state.route_id = route_id  # we overwrite it each time, in case it moved to a different route
+
+        try:
+            VEHICLE_START_TIME[board_id]
+        except KeyError:
+            VEHICLE_START_TIME[board_id] = datetime.now().strftime(c.FORMAT_TIME)
+            LOG.debug('updating board id = ' + board_id +' start time ')
 
 
 @app.route("/", methods=["GET"])
@@ -108,13 +122,16 @@ def gtfs_static():
 
 @app.route("/rt", methods=["GET", "POST"])
 def gtfs_realtime():
+    handle_message()
     LOG.debug("Send live feed, %i raw entries", len(STATE))
     feed = create_gtfs_feed(STATE)
+    with open("feed_human.txt", "w") as text_file:
+        text_file.write(str(feed))
     mem = BytesIO()
     mem.write(feed.SerializeToString())
     mem.seek(0)
     name = datetime.now().strftime("gtfs-rtec-%Y-%m-%d--%H-%M-%S.pb")
-    return send_file(mem, as_attachment=True, attachment_filename=name, mimetype="application/protobuf")
+    return send_file(mem, as_attachment=True, download_name=name, mimetype="application/protobuf")
 
 @app.route("/rt-human", methods=["GET"])
 def gtfs_realtime_human():

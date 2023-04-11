@@ -12,17 +12,17 @@ class VehicleState:
     lat: float
     lon: float
     speed: float
-    direction: int
+    #direction: int
     route_id: str
 
     def __init__(self, data: dict, route_id: str):
-        self.rtu_id = data["rtu_id"]
-        self.board_name = data["board"]
+        self.rtu_id = data["route_id"]
+        self.board_name = data["label"]
         self.last_seen = ((datetime.strptime(data["timestamp"], c.FORMAT_TIME))+timedelta(hours=3)).timestamp() #TODO: get rid of substracting days, must use timezones
         self.lat = data["latitude"]
         self.lon = data["longitude"]
-        self.speed = data["speed"] / 3.6  # convert to m/s
-        self.direction = data["direction"]
+        self.speed = data["speed"] / 3.6 if data["speed"] is not None else 0  # convert to m/s
+        #self.direction = data["direction"]
         self.route_id = route_id
 
     def __str__(self):

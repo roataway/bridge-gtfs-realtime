@@ -12,7 +12,7 @@ MQTT_BROKER = "opendata.dekart.com"
 MQTT_PORT = 1945
 
 
-FORMAT_TIME = "%Y-%m-%dT%H:%M:%SZ"
+FORMAT_TIME = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 # http response to return when we've got an empty feed
 NO_CONTENT = ("", 204)
